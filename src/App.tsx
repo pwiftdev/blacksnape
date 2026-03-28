@@ -136,7 +136,7 @@ export default function App() {
             />
           </div>
           <div className="site-loader__panel">
-            <p className="site-loader__kicker">$BLACKSNAPE</p>
+            <p className="site-loader__kicker">$SNAPE</p>
             <h1 id="loader-title" className="site-loader__title">
               The Black Snape
             </h1>
@@ -166,7 +166,7 @@ export default function App() {
                 decoding="async"
               />
               <span className="brand__title">The Black Snape</span>
-              <span className="brand__ticker">$BLACKSNAPE</span>
+              <span className="brand__ticker">$SNAPE</span>
             </a>
             <nav className="site-header__nav" aria-label="Actions">
               <button
@@ -258,7 +258,7 @@ export default function App() {
                     <span className="story-nickname">“Black Snape.”</span>
                   </p>
                   <p className="story-muted">
-                    $BLACKSNAPE is the on-chain side of the joke—community-led,
+                    $SNAPE is the on-chain side of the joke—community-led,
                     culture-first, zero pretence.
                   </p>
                 </div>
