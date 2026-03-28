@@ -18,7 +18,8 @@ const VIDEO_SRC =
   '/Pierry_Chan_-_BLACKSNAPE_-_I_m_Black_Snape_Official_Music_Video_4l4Di8.mp4'
 
 /** Set when the mint is public; until then the UI shows a pending message and copy is disabled. */
-const LIVE_CONTRACT_ADDRESS: string | null = null
+const LIVE_CONTRACT_ADDRESS: string | null =
+  'DoCYYdidwDar9uBwAdn7wNuKhcKLNMDi9iAHBjQrpump'
 
 const CA_PENDING_MESSAGE =
   'Will be posted on our X first, then updated here.'
