@@ -1,0 +1,15 @@
+.cursor-wand {
+  position: fixed;
+  left: 0;
+  top: 0;
+  /* Above .site-loader (100) so the wand shows during the entry screen; still pointer-events: none */
+  z-index: 110;
+  pointer-events: none;
+}
+
+.cursor-wand__img {
+  display: block;
+  width: min(56px, 15vw);
+  height: auto;
+  user-select: none;
+}
