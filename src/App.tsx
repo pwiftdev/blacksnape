@@ -6,18 +6,34 @@ import {
   type TransitionEvent,
 } from 'react'
 import LiquidEther from './components/LiquidEther'
+import { VisitXModal } from './components/VisitXModal'
+import { XPostCard } from './components/XPostCard'
+import {
+  BLACK_SNAPE_X_COMMUNITY_URL,
+  BLACK_SNAPE_X_PROMO_URL,
+} from './config/links'
+import { BLACK_SNAPE_X_POSTS } from './data/blackSnapePosts'
 
 const VIDEO_SRC =
   '/Pierry_Chan_-_BLACKSNAPE_-_I_m_Black_Snape_Official_Music_Video_4l4Di8.mp4'
 
-/** Replace with the real Pump.fun mint when live */
-const PLACEHOLDER_CA = 'BLACKSNAPE_CA_PLACEHOLDER_UPDATE_AFTER_PUMPFUN_LAUNCH'
+/** Set when the mint is public; until then the UI shows a pending message and copy is disabled. */
+const LIVE_CONTRACT_ADDRESS: string | null = null
+
+const CA_PENDING_MESSAGE =
+  'Will be posted on our X first, then updated here.'
+
+const LOGO_SRC = '/logo.jpeg'
+
+const VISIT_X_MODAL_STORAGE_KEY = 'blacksnape-visit-x-dismissed'
+const VISIT_X_MODAL_DELAY_MS = 3000
 
 export default function App() {
   const videoRef = useRef<HTMLVideoElement>(null)
   const dismissFallbackRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [loaderState, setLoaderState] = useState<'open' | 'exiting' | 'gone'>('open')
   const [caCopied, setCaCopied] = useState(false)
+  const [visitModalOpen, setVisitModalOpen] = useState(false)
 
   useEffect(() => {
     document.body.classList.toggle('loader-active', loaderState !== 'gone')
@@ -28,6 +44,20 @@ export default function App() {
       queueMicrotask(() => document.getElementById('loader-enter-btn')?.focus())
     }
   }, [loaderState])
+
+  useEffect(() => {
+    if (loaderState !== 'gone') return
+    if (sessionStorage.getItem(VISIT_X_MODAL_STORAGE_KEY) === '1') return
+    const id = window.setTimeout(() => {
+      setVisitModalOpen(true)
+    }, VISIT_X_MODAL_DELAY_MS)
+    return () => window.clearTimeout(id)
+  }, [loaderState])
+
+  const closeVisitModal = useCallback(() => {
+    sessionStorage.setItem(VISIT_X_MODAL_STORAGE_KEY, '1')
+    setVisitModalOpen(false)
+  }, [])
 
   const finalizeLoader = useCallback(() => {
     if (dismissFallbackRef.current) {
@@ -48,14 +78,17 @@ export default function App() {
   }
 
   const handleCopyCa = async () => {
+    if (!LIVE_CONTRACT_ADDRESS) return
     try {
-      await navigator.clipboard.writeText(PLACEHOLDER_CA)
+      await navigator.clipboard.writeText(LIVE_CONTRACT_ADDRESS)
       setCaCopied(true)
       window.setTimeout(() => setCaCopied(false), 2200)
     } catch {
       setCaCopied(false)
     }
   }
+
+  const canCopyCa = Boolean(LIVE_CONTRACT_ADDRESS)
 
   const handleLoaderTransitionEnd = (e: TransitionEvent<HTMLDivElement>) => {
     if (loaderState !== 'exiting') return
@@ -67,6 +100,9 @@ export default function App() {
     loaderState === 'exiting'
       ? 'site-loader site-loader--exiting'
       : 'site-loader'
+
+  const headerXUrl =
+    BLACK_SNAPE_X_PROMO_URL.trim() || 'https://x.com/BlackSnapeX'
 
   return (
     <>
@@ -121,13 +157,51 @@ export default function App() {
         <header className="site-header" role="banner">
           <div className="site-header__inner">
             <a className="brand" href="/" aria-label="The Black Snape home">
+              <img
+                className="site-mark site-mark--header"
+                src={LOGO_SRC}
+                alt=""
+                width={40}
+                height={40}
+                decoding="async"
+              />
               <span className="brand__title">The Black Snape</span>
               <span className="brand__ticker">$BLACKSNAPE</span>
             </a>
-            <nav className="site-header__nav" aria-label="Primary">
-              <span className="nav-pill" aria-hidden="true">
-                memecoin
-              </span>
+            <nav className="site-header__nav" aria-label="Actions">
+              <button
+                type="button"
+                className="site-header__btn site-header__btn--ca"
+                onClick={handleCopyCa}
+                disabled={!canCopyCa}
+                title={
+                  canCopyCa
+                    ? 'Copy contract address'
+                    : 'CA will be shared on X first'
+                }
+              >
+                {caCopied ? 'Copied' : 'Copy CA'}
+              </button>
+              <a
+                className="site-header__btn site-header__btn--x"
+                href={headerXUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Open Black Snape on X"
+              >
+                <svg
+                  className="site-header__x-icon"
+                  viewBox="0 0 24 24"
+                  width={22}
+                  height={22}
+                  aria-hidden
+                >
+                  <path
+                    fill="currentColor"
+                    d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"
+                  />
+                </svg>
+              </a>
             </nav>
           </div>
         </header>
@@ -190,6 +264,15 @@ export default function App() {
                 </div>
 
                 <aside className="story-layout__aside" aria-label="Highlights">
+                  <img
+                    className="site-mark site-mark--story"
+                    src={LOGO_SRC}
+                    alt=""
+                    width={88}
+                    height={88}
+                    decoding="async"
+                    aria-hidden
+                  />
                   <figure className="story-quote">
                     <blockquote>
                       <p>Black Snape</p>
@@ -203,6 +286,58 @@ export default function App() {
                     </span>
                   </div>
                 </aside>
+              </div>
+            </div>
+          </section>
+
+          <section
+            className="section section--community"
+            id="join-community"
+            aria-labelledby="community-heading"
+          >
+            <div className="section__inner">
+              <p className="section__eyebrow section__eyebrow--dim">On X</p>
+              <h2 id="community-heading" className="section__title">
+                Join and create Black Snape memes!
+              </h2>
+              <p className="section__subhead section__subhead--community">
+                Share edits, reactions, and lore in the official community—then
+                watch the timeline catch fire.
+              </p>
+              <div className="community-cta">
+                <h3 className="community-cta__label">Join our X Community</h3>
+                <a
+                  className="community-cta__btn"
+                  href={BLACK_SNAPE_X_COMMUNITY_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Open community on X
+                </a>
+              </div>
+            </div>
+          </section>
+
+          <section
+            className="section section--x-posts"
+            id="the-feed"
+            aria-labelledby="x-posts-heading"
+          >
+            <div className="section__inner">
+              <p className="section__eyebrow section__eyebrow--dim">
+                The timeline
+              </p>
+              <h2 id="x-posts-heading" className="section__title">
+                Black Snape on X
+              </h2>
+              <p className="section__subhead">
+                Pixel captures from X—tap any card or “View on X” for the live
+                thread.
+              </p>
+              <div className="x-posts__grid">
+                {BLACK_SNAPE_X_POSTS.map((post) => (
+                  <XPostCard key={post.url} post={post} />
+                ))}
               </div>
             </div>
           </section>
@@ -226,32 +361,63 @@ export default function App() {
               </p>
 
               <div className="token-card">
+                <img
+                  className="site-mark site-mark--token"
+                  src={LOGO_SRC}
+                  alt=""
+                  width={56}
+                  height={56}
+                  decoding="async"
+                  aria-hidden
+                />
                 <div className="token-card__row">
                   <div className="token-card__label">Contract address</div>
-                  <code
-                    className="token-card__ca"
-                    title={PLACEHOLDER_CA}
-                  >
-                    {PLACEHOLDER_CA}
-                  </code>
+                  {LIVE_CONTRACT_ADDRESS ? (
+                    <code className="token-card__ca" title={LIVE_CONTRACT_ADDRESS}>
+                      {LIVE_CONTRACT_ADDRESS}
+                    </code>
+                  ) : (
+                    <p className="token-card__ca token-card__ca--pending">
+                      {CA_PENDING_MESSAGE}
+                    </p>
+                  )}
                 </div>
                 <div className="token-card__actions">
                   <button
                     type="button"
                     className="token-card__copy"
                     onClick={handleCopyCa}
+                    disabled={!canCopyCa}
+                    title={
+                      canCopyCa
+                        ? 'Copy contract address'
+                        : 'CA will be shared on X first'
+                    }
                   >
                     {caCopied ? 'Copied' : 'Copy CA'}
                   </button>
                   <span className="token-card__hint">
-                    Placeholder—swap in the real mint after launch.
+                    {canCopyCa
+                      ? 'Double-check the mint on Pump.fun before you buy.'
+                      : 'Watch our X for the mint—this box will update when the CA is live.'}
                   </span>
                 </div>
               </div>
             </div>
           </section>
         </div>
+
+        <footer className="site-footer">
+          <p className="site-footer__line">
+            created with love{' '}
+            <span className="site-footer__heart" role="img" aria-label="black heart">
+              🖤
+            </span>
+          </p>
+        </footer>
       </main>
+
+      <VisitXModal open={visitModalOpen} onClose={closeVisitModal} />
     </>
   )
 }
